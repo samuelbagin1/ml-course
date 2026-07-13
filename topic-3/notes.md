@@ -251,6 +251,35 @@ print(tree_search.best_params_)
 print(tree_search.best_score_)
 ```
 
+For k-NN, tune the number of neighbors, distance metric, and voting weights. Scaling must remain inside the pipeline so that each cross-validation fold learns its scaling values only from that fold's training data.
+
+```python
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+
+knn_search = GridSearchCV(
+    estimator=Pipeline([
+        ("scaler", StandardScaler()),
+        ("knn", KNeighborsClassifier()),
+    ]),
+    param_grid={
+        "knn__n_neighbors": range(1, 32, 2),
+        "knn__weights": ["uniform", "distance"],
+        "knn__metric": ["euclidean", "manhattan"],
+    },
+    cv=cv,
+    scoring="accuracy",
+    n_jobs=-1,
+)
+knn_search.fit(X_train, y_train)
+
+print(knn_search.best_params_)
+print(knn_search.best_score_)
+```
+
+Use odd values of $k$ in binary classification to reduce the chance of tied votes. The best value of $k$ is data-dependent, so select it from the cross-validation score rather than assuming a standard choice.
+
 Workflow:
 
 1. Split off a final test/hold-out set.
